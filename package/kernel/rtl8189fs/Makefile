@@ -1,50 +1,45 @@
-#
-# Copyright (C) 2021 ImmortalWrt
-#
-# This is free software, licensed under the GNU General Public License v2.
-# See /LICENSE for more information.
-#
-
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=rtl8189es
-PKG_RELEASE:=1
+PKG_NAME:=rtl8189fs
+PKG_RELEASE=1
+
+PKG_LICENSE:=GPLv2
+PKG_LICENSE_FILES:=
 
 PKG_SOURCE_URL:=https://github.com/jwrdegoede/rtl8189ES_linux.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_DATE:=2021-03-03
-PKG_SOURCE_VERSION:=03ac413135a355b55b693154c44b70f86a39732e
-PKG_MIRROR_HASH:=5cdd69a0c2383e66ae27b0518b4d6a3e845928767d644e1e2b12095b98ed8fbe
+PKG_SOURCE_DATE:=2021-03-01
+PKG_SOURCE_VERSION:=62c31d577c385316bb99107f60e63169dacc37db
+PKG_MIRROR_HASH:=62c31d577c385316bb99107f60e63169dacc37db
 
 PKG_MAINTAINER:=Hauke Mehrtens <hauke@hauke-m.de>
-PKG_BUILD_PARALLEL:=1
 
 STAMP_CONFIGURED_DEPENDS := $(STAGING_DIR)/usr/include/mac80211-backport/backport/autoconf.h
 
 include $(INCLUDE_DIR)/kernel.mk
 include $(INCLUDE_DIR)/package.mk
 
-define KernelPackage/rtl8189es
+define KernelPackage/rtl8189fs
   SUBMENU:=Wireless Drivers
-  TITLE:=Realtek RTL8189ETV SDIO WiFi
+  TITLE:=Realtek RTL8189FTV SDIO WiFi
   DEPENDS:=+kmod-cfg80211 +kmod-mmc +@DRIVER_11N_SUPPORT
-  FILES:=$(PKG_BUILD_DIR)/rtl8189es.ko
-  AUTOLOAD:=$(call AutoProbe,rtl8189es)
+  FILES:=$(PKG_BUILD_DIR)/rtl8189fs.ko
+  AUTOLOAD:=$(call AutoProbe, rtl8189fs)
 endef
 
 NOSTDINC_FLAGS = \
 	-I$(PKG_BUILD_DIR) \
 	-I$(PKG_BUILD_DIR)/include \
-	-I$(STAGING_DIR)/usr/include/mac80211-backport \
 	-I$(STAGING_DIR)/usr/include/mac80211-backport/uapi \
-	-I$(STAGING_DIR)/usr/include/mac80211 \
+	-I$(STAGING_DIR)/usr/include/mac80211-backport \
 	-I$(STAGING_DIR)/usr/include/mac80211/uapi \
+	-I$(STAGING_DIR)/usr/include/mac80211 \
 	-include backport/autoconf.h \
 	-include backport/backport.h
 
 EXTRA_KCONFIG:= \
-	CONFIG_RTL8189ES=m \
-	USER_MODULE_NAME=rtl8189es
+	CONFIG_RTL8189FS=m \
+	USER_MODULE_NAME=rtl8189fs
 
 EXTRA_CFLAGS:= \
 	-DRTW_SINGLE_WIPHY \
@@ -65,4 +60,9 @@ define Build/Compile
 		modules
 endef
 
-$(eval $(call KernelPackage,rtl8189es))
+define KernelPackage/rtl8189fs/install
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_DATA) ./files/50_rtl-wifi $(1)/etc/uci-defaults/
+endef
+
+$(eval $(call KernelPackage,rtl8189fs))
